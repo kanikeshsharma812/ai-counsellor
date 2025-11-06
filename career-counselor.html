@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Career Counselor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            height: 90vh;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .header-text h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .header-text p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f7f9fc;
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 20px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .message.bot .message-avatar {
+            background: #667eea;
+        }
+
+        .message.user .message-avatar {
+            background: #764ba2;
+        }
+
+        .message-content {
+            max-width: 70%;
+            margin: 0 15px;
+        }
+
+        .message-bubble {
+            padding: 12px 18px;
+            border-radius: 18px;
+            line-height: 1.6;
+            white-space: pre-line;
+        }
+
+        .message.bot .message-bubble {
+            background: white;
+            color: #333;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: #999;
+            margin-top: 5px;
+            padding: 0 5px;
+        }
+
+        .input-area {
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            padding: 20px;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-container input {
+            flex: 1;
+            padding: 12px 18px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 15px;
+            outline: none;
+            transition: border 0.3s;
+        }
+
+        .input-container input:focus {
+            border-color: #667eea;
+        }
+
+        .input-container button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .input-container button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .input-container button:active {
+            transform: translateY(0);
+        }
+
+        .footer-text {
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+            margin-top: 10px;
+        }
+
+        .career-card {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+
+        .career-title {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .career-detail {
+            font-size: 13px;
+            color: #555;
+            margin: 3px 0;
+        }
+
+        /* Scrollbar styling */
+        .messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .messages::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-icon">🎓</div>
+            <div class="header-text">
+                <h1>AI Career Counselor</h1>
+                <p>Your personalized career guidance assistant</p>
+            </div>
+        </div>
+
+        <div class="messages" id="messages"></div>
+
+        <div class="input-area">
+            <div class="input-container">
+                <input type="text" id="userInput" placeholder="Type your response..." />
+                <button onclick="sendMessage()">Send ✈️</button>
+            </div>
+            <div class="footer-text">Powered by AI-driven career matching algorithm</div>
+        </div>
+    </div>
+
+    <script>
+        const careerDatabase = {
+            'Software Developer': {
+                interests: ['technology', 'programming', 'problem solving', 'computers'],
+                skills: ['coding', 'analytical thinking', 'logic', 'mathematics'],
+                education: "Bachelor's in Computer Science or related field",
+                salary: '$70,000 - $150,000+',
+                growth: 'High (22% growth)',
+                description: 'Design, develop, and maintain software applications'
+            },
+            'Data Scientist': {
+                interests: ['technology', 'mathematics', 'statistics', 'analysis'],
+                skills: ['python', 'statistics', 'machine learning', 'data analysis'],
+                education: "Bachelor's/Master's in Data Science, Statistics, or CS",
+                salary: '$80,000 - $160,000+',
+                growth: 'Very High (36% growth)',
+                description: 'Analyze complex data to help companies make decisions'
+            },
+            'UX/UI Designer': {
+                interests: ['design', 'technology', 'arts', 'creativity', 'psychology'],
+                skills: ['design', 'creativity', 'user research', 'prototyping'],
+                education: "Bachelor's in Design, HCI, or related field",
+                salary: '$60,000 - $120,000',
+                growth: 'High (16% growth)',
+                description: 'Create intuitive and visually appealing user interfaces'
+            },
+            'Registered Nurse': {
+                interests: ['healthcare', 'helping others', 'medicine', 'science'],
+                skills: ['communication', 'empathy', 'critical thinking', 'biology'],
+                education: 'Bachelor of Science in Nursing (BSN)',
+                salary: '$60,000 - $100,000',
+                growth: 'Very High (9% growth)',
+                description: 'Provide patient care and health education'
+            },
+            'Marketing Manager': {
+                interests: ['business', 'creativity', 'communication', 'strategy'],
+                skills: ['communication', 'creativity', 'analytics', 'leadership'],
+                education: "Bachelor's in Marketing, Business, or Communications",
+                salary: '$65,000 - $140,000',
+                growth: 'Moderate (10% growth)',
+                description: 'Develop marketing strategies to promote products/services'
+            },
+            'Financial Analyst': {
+                interests: ['business', 'finance', 'economics', 'mathematics'],
+                skills: ['analytical thinking', 'mathematics', 'excel', 'finance'],
+                education: "Bachelor's in Finance, Economics, or Accounting",
+                salary: '$60,000 - $120,000',
+                growth: 'Moderate (8% growth)',
+                description: 'Analyze financial data to guide business decisions'
+            },
+            'Mechanical Engineer': {
+                interests: ['engineering', 'technology', 'design', 'mathematics'],
+                skills: ['mathematics', 'physics', 'problem solving', 'cad'],
+                education: "Bachelor's in Mechanical Engineering",
+                salary: '$65,000 - $110,000',
+                growth: 'Moderate (7% growth)',
+                description: 'Design and develop mechanical systems and devices'
+            },
+            'Graphic Designer': {
+                interests: ['arts', 'design', 'creativity', 'visual communication'],
+                skills: ['creativity', 'design', 'adobe suite', 'communication'],
+                education: "Bachelor's in Graphic Design or Fine Arts",
+                salary: '$45,000 - $80,000',
+                growth: 'Moderate (3% growth)',
+                description: 'Create visual content for brands and media'
+            },
+            'Teacher': {
+                interests: ['education', 'helping others', 'communication', 'knowledge'],
+                skills: ['communication', 'patience', 'organization', 'empathy'],
+                education: "Bachelor's in Education + Teaching Certification",
+                salary: '$45,000 - $75,000',
+                growth: 'Moderate (4% growth)',
+                description: 'Educate and inspire students in academic subjects'
+            },
+            'Cybersecurity Analyst': {
+                interests: ['technology', 'security', 'problem solving', 'computers'],
+                skills: ['networking', 'security', 'analytical thinking', 'coding'],
+                education: "Bachelor's in Cybersecurity or Computer Science",
+                salary: '$75,000 - $140,000',
+                growth: 'Very High (35% growth)',
+                description: 'Protect organizations from cyber threats and attacks'
+            }
+        };
+
+        let userData = {
+            interests: [],
+            skills: [],
+            grades: '',
+            experience: ''
+        };
+        let stage = 'interests';
+
+        function addMessage(type, text) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            messageDiv.innerHTML = `
+                <div class="message-avatar">${type === 'bot' ? '🤖' : '👤'}</div>
+                <div class="message-content">
+                    <div class="message-bubble">${text}</div>
+                    <div class="message-time">${time}</div>
+                </div>
+            `;
+            
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function calculateMatch(career, userData) {
+            let score = 0;
+            const careerData = careerDatabase[career];
+            
+            const interestMatches = userData.interests.filter(interest => 
+                careerData.interests.some(ci => ci.includes(interest.toLowerCase()) || interest.toLowerCase().includes(ci))
+            );
+            score += (interestMatches.length / Math.max(userData.interests.length, 1)) * 40;
+            
+            const skillMatches = userData.skills.filter(skill =>
+                careerData.skills.some(cs => cs.includes(skill.toLowerCase()) || skill.toLowerCase().includes(cs))
+            );
+            score += (skillMatches.length / Math.max(userData.skills.length, 1)) * 40;
+            
+            if (userData.grades.toLowerCase().includes('a') || userData.grades.toLowerCase().includes('high') || userData.grades.toLowerCase().includes('excellent')) {
+                score += 20;
+            } else if (userData.grades.toLowerCase().includes('b') || userData.grades.toLowerCase().includes('good')) {
+                score += 15;
+            } else {
+                score += 10;
+            }
+            
+            return Math.min(Math.round(score), 100);
+        }
+
+        function generateRecommendations() {
+            const recommendations = Object.keys(careerDatabase).map(career => ({
+                career,
+                match: calculateMatch(career, userData),
+                data: careerDatabase[career]
+            }));
+            
+            recommendations.sort((a, b) => b.match - a.match);
+            return recommendations.slice(0, 3);
+        }
+
+        function processInput(userInput) {
+            let botResponse = '';
+            
+            switch (stage) {
+                case 'interests':
+                    userData.interests = userInput.split(',').map(i => i.trim());
+                    botResponse = "Great! Now tell me about your key skills. What are you good at? (e.g., problem solving, communication, creativity, mathematics)";
+                    stage = 'skills';
+                    break;
+                
+                case 'skills':
+                    userData.skills = userInput.split(',').map(s => s.trim());
+                    botResponse = "Perfect! How would you describe your academic performance? (e.g., excellent grades, good grades, average)";
+                    stage = 'grades';
+                    break;
+                
+                case 'grades':
+                    userData.grades = userInput;
+                    botResponse = "Last question! Do you have any relevant experience or projects? (briefly describe, or say 'none')";
+                    stage = 'experience';
+                    break;
+                
+                case 'experience':
+                    userData.experience = userInput;
+                    const recommendations = generateRecommendations();
+                    
+                    botResponse = "Based on your profile, here are my top 3 career recommendations:\n\n";
+                    recommendations.forEach((rec, index) => {
+                        botResponse += `<div class="career-card">
+                            <div class="career-title">${index + 1}. ${rec.career} (${rec.match}% match)</div>
+                            <div class="career-detail">${rec.data.description}</div>
+                            <div class="career-detail">📚 Education: ${rec.data.education}</div>
+                            <div class="career-detail">💰 Salary: ${rec.data.salary}</div>
+                            <div class="career-detail">📈 Growth: ${rec.data.growth}</div>
+                        </div>`;
+                    });
+                    
+                    botResponse += "\nWould you like more details about any of these careers, or shall we explore other options?";
+                    stage = 'complete';
+                    break;
+                
+                case 'complete':
+                    botResponse = "I can provide more information about the recommended careers, suggest learning resources, or we can start fresh with new preferences. What would you like to do?";
+                    break;
+            }
+            
+            setTimeout(() => addMessage('bot', botResponse), 500);
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                addMessage('user', message);
+                input.value = '';
+                processInput(message);
+            }
+        }
+
+        document.getElementById('userInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Initial messages
+        addMessage('bot', "Hi! I'm your AI Career Counselor. I'll help you discover career paths that match your interests and skills. Let's start with a few questions!");
+        addMessage('bot', "What are your main areas of interest? (e.g., technology, healthcare, arts, business, science)");
+    </script>
+</body>
+</html>
